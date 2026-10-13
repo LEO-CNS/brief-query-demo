@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>招聘需求简报 · 最小集查询 Demo</title>
+<style>
+  :root{--brand:#1f3d2b;--ink:#1f2937;--muted:#6b7280;--line:#e5e3da;--bg:#f7f6f1;--card:#fff;--amber:#b45309;--red:#a32d2d;--green:#0F6E56;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);padding:28px 16px;line-height:1.7;}
+  .wrap{max-width:860px;margin:0 auto;}
+  h1{font-size:20px;color:var(--brand);margin-bottom:2px;}
+  .sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin-bottom:16px;}
+  label{font-size:13px;color:var(--brand);font-weight:600;display:block;margin:10px 0 4px;}
+  select,input[type=text]{border:1px solid #d6d3c8;border-radius:8px;padding:8px 10px;font-size:14px;background:#fbfaf6;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+  button{border:1px solid var(--brand);background:var(--brand);color:#fff;border-radius:9px;padding:8px 18px;font-size:14px;cursor:pointer;}
+  button.ghost{background:transparent;color:var(--brand);}
+  .chip{display:inline-block;border:1px solid #d6d3c8;background:#fbfaf6;color:#4b5563;border-radius:7px;padding:3px 10px;font-size:12px;cursor:pointer;margin:2px 4px 2px 0;}
+  h2{font-size:15px;color:var(--brand);margin:4px 0 10px;}
+  .ans{font-size:15px;margin-bottom:12px;}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:640px){.cols{grid-template-columns:1fr;}}
+  .col{border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+  .col h3{font-size:13px;margin-bottom:8px;}
+  .col.must h3{color:#a32d2d;}
+  .col.pref h3{color:var(--green);}
+  .item{border-top:1px dashed var(--line);padding:8px 0;}
+  .item:first-of-type{border-top:none;}
+  .req{font-size:14px;}
+  .src{font-size:12px;color:var(--muted);margin-top:2px;}
+  .src b{color:var(--brand);}
+  .note{font-size:12px;color:var(--muted);margin-top:10px;}
+  .warn{background:#FAEEDA;border:1px solid #EF9F27;border-radius:8px;padding:8px 12px;font-size:13px;color:var(--amber);margin:10px 0;}
+  .err{background:#FCEBEB;border:1px solid #E24B4A;border-radius:8px;padding:10px 14px;font-size:14px;color:var(--red);}
+  .err code{font-size:12px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px;}
+  th{background:#eef4ef;color:var(--brand);text-align:left;padding:7px 10px;border:1px solid var(--line);}
+  td{padding:7px 10px;border:1px solid var(--line);}
+  .audit{font-size:12px;color:var(--muted);margin-top:12px;border-top:1px solid var(--line);padding-top:10px;}
+  .foot{font-size:12px;color:var(--muted);margin-top:8px;}
+  a{color:var(--brand);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>招聘需求简报 · 最小集查询 Demo</h1>
+  <div class="sub">任务：林亦舟查当前简报「必备条件 / 偏好条件」｜输出：简短答案 + 来源原文（版本号 + 字段）｜本页为纯前端静态版（GitHub Pages），CLI 版见 <a href="https://github.com/LEO-CNS/brief-query-demo">仓库</a></div>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>身份（模拟）</label>
+        <select id="user">
+          <option value="E001">E001 · 林亦舟（招聘与用工服务顾问）</option>
+          <option value="E002">E002 · 同事甲（招聘与用工服务顾问）</option>
+        </select>
+      </div>
+      <div>
+        <label>岗位代号</label>
+        <input type="text" id="job" value="J-2026-001" style="width:150px">
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button onclick="doQuery()">查必备 / 偏好</button>
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <span class="chip" onclick="setJob('J-2026-001')">J-2026-001 数据工程师（主场景）</span>
+      <span class="chip" onclick="setJob('J-2026-002')">J-2026-002 Java开发（同事批次）</span>
+      <span class="chip" onclick="setJob('J-2026-003')">J-2026-003 测试（已作废）</span>
+      <span class="chip" onclick="setJob('J-2026-004')">J-2026-004 产品（未确认）</span>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div>
+        <label>字段试探（试试输入：财务预算）</label>
+        <input type="text" id="field" placeholder="字段名" style="width:150px">
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="ghost" onclick="doField()">试探该字段</button>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="ghost" onclick="doStatus()">我的批次状态（只读）</button>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button class="ghost" onclick="doRaci()">角色分工</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="result">
+    <h2>结果</h2>
+    <div class="foot">点上面任意按钮开始。建议顺序：查必备/偏好 → 试探「财务预算」→ 我的批次状态 → 换 E002 再查一次状态。</div>
+  </div>
+
+  <div class="foot">验收四条：来源支持答案（每条带版本号+字段）· 权限正确（不开放字段/他人批次拦截）· 失败可解释（错误码+原因）· 能按手册维护（CLI：<code>python3 brief_demo.py manual</code>）<br>数据为合成演练样本，不代表任何企业真实经营数据。身份由页面模拟，不是真实鉴权。</div>
+</div>
+
+<script>
+/* ============ 合成数据（与 brief_demo.py 保持一致） ============ */
+const TODAY = "2026-10-13";
+const USERS = {
+  "E001": {name:"林亦舟", role:"招聘与用工服务顾问"},
+  "E002": {name:"同事甲", role:"招聘与用工服务顾问"}
+};
+const RACI = {
+  "制度负责人":"顾明岚（服务业务负责人）：业务目标、试点范围与验收口径",
+  "事实核对":"唐映秋（排期与培训协调员）：交接留痕——版本/未结项/截止时间",
+  "运行维护":"秦芮（数据与系统工程师）：简报数据维护、失败快照、字段对齐",
+  "质量把关":"傅景（质量复核负责人）：授权确认、四要素留痕、异常人工队列",
+  "客户口径":"叶书（客户岗位负责人）：用途确认属对外承诺前置，不代客户表态"
+};
+const BRIEFS = [
+  {job_code:"J-2026-001", title:"数据工程师（某银行科技子公司）", owner:"E001", versions:[
+    {version:"v1", status:"superseded", valid_until:"2026-09-30", confirmed:true, conditions:[
+      {field:"工作经验", type:"内部附加条件", tier:"必备", text:"3年以上数据开发经验"},
+      {field:"证书", type:"内部附加条件", tier:"偏好", text:"持有PMP者优先"}]},
+    {version:"v2", status:"active", valid_until:"2026-12-31", confirmed:true, conditions:[
+      {field:"学历", type:"内部附加条件", tier:"必备", text:"全日制本科及以上，计算机相关专业"},
+      {field:"工作经验", type:"合同硬约束", tier:"必备", text:"3年以上数据开发经验（合同附件三约定）"},
+      {field:"到岗时间", type:"合同硬约束", tier:"必备", text:"录用后4周内到岗（合同附件三约定）"},
+      {field:"证书", type:"内部附加条件", tier:"偏好", text:"持有CDGA/CDMP者优先"},
+      {field:"行业背景", type:"客户口径", tier:"偏好", text:"有银行/金融行业数据项目经历者优先（客户口头口径，叶书确认）"}],
+      restricted_fields:["客户内部筛选标准","财务预算"]}]},
+  {job_code:"J-2026-002", title:"Java 开发工程师（某零售集团）", owner:"E002", versions:[
+    {version:"v1", status:"active", valid_until:"2026-11-30", confirmed:true, conditions:[
+      {field:"学历", type:"内部附加条件", tier:"必备", text:"本科及以上"}],
+      restricted_fields:["客户内部筛选标准","财务预算"]}]},
+  {job_code:"J-2026-003", title:"测试工程师（某保险公司）", owner:"E001", versions:[
+    {version:"v1", status:"voided", valid_until:"2026-08-31", confirmed:false,
+      void_reason:"客户取消岗位，需求作废（2026-08-20 顾明岚确认）", conditions:[]}]},
+  {job_code:"J-2026-004", title:"产品经理（某券商）", owner:"E001", versions:[
+    {version:"v2", status:"active", valid_until:"2026-12-31", confirmed:false, conditions:[
+      {field:"学历", type:"内部附加条件", tier:"必备", text:"本科及以上"}],
+      restricted_fields:["客户内部筛选标准","财务预算"]}]}
+];
+
+/* ============ 核心逻辑（与 brief_demo.py 保持一致） ============ */
+function versionState(v){
+  const reasons = [];
+  if(v.status==="voided") reasons.push("已作废："+(v.void_reason||"未留原因"));
+  else if(v.status==="superseded") reasons.push("旧版本，已被后继版本取代");
+  if((v.valid_until||"9999-12-31")<TODAY) reasons.push("版本有效期已过（至 "+v.valid_until+"）");
+  if(!v.confirmed) reasons.push("确认状态=未确认");
+  return reasons;
+}
+function activeVersion(brief){
+  let chosen=null; const audit=[];
+  for(const v of brief.versions){
+    const reasons=versionState(v);
+    const expired=reasons.some(r=>r.indexOf("版本有效期已过")===0);
+    if(v.status==="active"&&!expired){
+      if(chosen===null){chosen=v;audit.push({version:v.version,decision:"采用",reason:"当前有效版本"});}
+      else{audit.push({version:v.version,decision:"排除",reason:"同一简报出现多个有效版本（版本断链，需人工处理队列）"});}
+    }else{
+      audit.push({version:v.version,decision:"排除",reason:reasons.join("；")||"非有效状态"});
+    }
+  }
+  return [chosen,audit];
+}
+function fail(code,reason){return {error:code,reason:reason,explainable_failure:true};}
+function findBrief(code){return BRIEFS.find(b=>b.job_code===code)||null;}
+
+function cmdQuery(jobCode,asUser,field){
+  const user=USERS[asUser];
+  if(!user) return fail("unknown_user","用户 "+asUser+" 不在权威员工表中");
+  const brief=findBrief(jobCode);
+  if(!brief) return fail("brief_not_found",
+    "未找到岗位代号 "+jobCode+"。失败可解释：请核对代号（当前库内："+BRIEFS.map(b=>b.job_code).join("、")+"）");
+  const [ver,audit]=activeVersion(brief);
+  if(field){
+    if(ver&&ver.restricted_fields&&ver.restricted_fields.indexOf(field)>=0)
+      return fail("field_not_open",
+        "字段「"+field+"」不开放。最小集资料边界：客户内部筛选标准与财务预算不对招聘顾问开放；如业务确需，走顾明岚→叶书的客户口径确认流程");
+    if(!(ver&&ver.conditions.some(c=>c.field===field)))
+      return fail("field_not_found","字段「"+field+"」在 "+(ver?ver.version:"任何版本")+" 中不存在");
+  }
+  if(!ver) return fail("no_active_version",
+    "岗位 "+jobCode+" 没有可用的有效版本。排除轨迹："+JSON.stringify(audit));
+  let conds=ver.conditions;
+  if(field) conds=conds.filter(c=>c.field===field);
+  const must=conds.filter(c=>c.tier==="必备"), pref=conds.filter(c=>c.tier==="偏好");
+  const src=c=>"版本 "+ver.version+" · 字段「"+c.field+"」· 类型 "+c.type;
+  const out={
+    task:"查询当前招聘需求简报的必备/偏好条件",
+    as_user:asUser+" "+user.name,
+    job:{code:jobCode,title:brief.title},
+    answer:{
+      "必备条件":must.map(c=>({"要求":c.text,"来源":src(c)})),
+      "偏好条件":pref.map(c=>({"要求":c.text,"来源":src(c)}))
+    },
+    answer_text:"必备 "+must.length+" 项："+must.map(c=>c.field).join("、")
+      +"；偏好 "+pref.length+" 项："+pref.map(c=>c.field).join("、"),
+    not_open:ver.restricted_fields||[],
+    audit:{
+      used_version:ver.version,
+      confirmed:ver.confirmed,
+      excluded_versions:audit.filter(a=>a.decision==="排除"),
+      write_back:false, external_message:false
+    }
+  };
+  if(!ver.confirmed)
+    out.warning="当前版本 "+ver.version+" 确认状态=未确认，答案仅供预览；正式使用需业务负责人确认（傅景质量把关）";
+  return out;
+}
+function cmdStatus(asUser){
+  const user=USERS[asUser];
+  if(!user) return fail("unknown_user","用户 "+asUser+" 不在权威员工表中");
+  const mine=BRIEFS.filter(b=>b.owner===asUser).map(b=>{
+    const [ver]=activeVersion(b);
+    return {job_code:b.job_code,title:b.title,
+      "当前版本":ver?ver.version:null,
+      "确认状态":(ver&&ver.confirmed)?"已确认":"未确认",
+      "有效期至":ver?ver.valid_until:null};
+  });
+  return {task:"只读查询本人负责批次的简报确认状态与版本",
+    as_user:asUser+" "+user.name, batches:mine,
+    note:"只读：不写回任何系统、不发送外部消息；他人批次不可见"};
+}
+
+/* ============ 页面渲染 ============ */
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function setJob(j){document.getElementById('job').value=j;doQuery();}
+function itemHTML(c){return '<div class="item"><div class="req">'+esc(c['要求'])+'</div><div class="src">来源：<b>'+esc(c['来源'])+'</b></div></div>';}
+function auditHTML(d){
+  const a=d.audit||{};
+  const ex=(a.excluded_versions||[]).map(e=>esc(e.version)+'（'+esc(e.reason)+'）').join('；');
+  let h='<div class="audit">采用版本：'+esc(a.used_version||'-')+' · 确认状态：'+(a.confirmed?'已确认':'未确认')
+    +' · 写回：'+(a.write_back?'是':'否')+' · 外部消息：'+(a.external_message?'是':'否');
+  if(ex) h+='；排除轨迹：'+ex;
+  return h+'</div>';
+}
+function showQuery(d){
+  const el=document.getElementById('result');
+  if(d.error){el.innerHTML='<h2>查询失败（可解释）</h2><div class="err"><code>'+esc(d.error)+'</code><br>'+esc(d.reason)+'</div>';return;}
+  let h='<h2>'+esc(d.job.code)+' · '+esc(d.job.title)+'</h2><div class="ans">'+esc(d.answer_text)+'</div>';
+  if(d.warning) h+='<div class="warn">'+esc(d.warning)+'</div>';
+  h+='<div class="cols"><div class="col must"><h3>必备条件</h3>'+(d.answer['必备条件'].map(itemHTML).join('')||'<div class="note">（空）</div>')+'</div>'
+   +'<div class="col pref"><h3>偏好条件</h3>'+(d.answer['偏好条件'].map(itemHTML).join('')||'<div class="note">（空）</div>')+'</div></div>';
+  if(d.not_open&&d.not_open.length) h+='<div class="note">不开放字段（资料边界）：'+d.not_open.map(esc).join('、')+'</div>';
+  h+=auditHTML(d);
+  el.innerHTML=h;
+}
+function showStatus(d){
+  const el=document.getElementById('result');
+  if(d.error){el.innerHTML='<div class="err"><code>'+esc(d.error)+'</code><br>'+esc(d.reason)+'</div>';return;}
+  const rows=d.batches.map(b=>'<tr><td>'+esc(b.job_code)+'</td><td>'+esc(b.title)+'</td><td>'+esc(b['当前版本']||'-（无有效版本）')+'</td><td>'+esc(b['确认状态'])+'</td><td>'+esc(b['有效期至']||'-')+'</td></tr>').join('');
+  el.innerHTML='<h2>我的批次状态（只读）</h2><div class="note" style="margin:0 0 6px">'+esc(d.as_user)+' · '+esc(d.note)+'</div>'
+   +'<table><tr><th>岗位代号</th><th>岗位</th><th>当前版本</th><th>确认状态</th><th>有效期至</th></tr>'+(rows||'<tr><td colspan=5>（无负责批次）</td></tr>')+'</table>';
+}
+function showRaci(){
+  const el=document.getElementById('result');
+  const rows=Object.keys(RACI).map(k=>'<tr><td><b>'+esc(k)+'</b></td><td>'+esc(RACI[k])+'</td></tr>').join('');
+  el.innerHTML='<h2>角色分工</h2><table>'+rows+'</table>';
+}
+function doQuery(){showQuery(cmdQuery(document.getElementById('job').value.trim(),document.getElementById('user').value));}
+function doField(){
+  const f=document.getElementById('field').value.trim();
+  if(!f){alert('请输入字段名，例如：财务预算');return;}
+  showQuery(cmdQuery(document.getElementById('job').value.trim(),document.getElementById('user').value,f));
+}
+function doStatus(){showStatus(cmdStatus(document.getElementById('user').value));}
+function doRaci(){showRaci();}
+</script>
+</body>
+</html>

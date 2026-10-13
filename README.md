@@ -2,6 +2,11 @@
 
 案例：招聘需求澄清与面试协同（合成演练数据，不代表任何企业真实经营数据）。
 
+**在线体验（纯前端静态版）**：<https://leo-cns.github.io/brief-query-demo/>
+
+- `index.html` — 纯前端版（GitHub Pages 托管，数据与查询逻辑内嵌，无需后端）
+- `brief_demo.py` — CLI + 本地页面版（`python3 brief_demo.py demo` 一键跑全部场景）
+
 ## 最小集 → 实现对照
 
 | 最小集要素 | 实现位置 | 说明 |
